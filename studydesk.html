@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0f6e56">
 <title>Study Desk — case study · Kellen Poole</title>
-<meta name="description" content="A study workflow that replaced hand-written notes: it reads the course page I'm on, says it back shorter and in plainer words, and lets me stop and ask anything the moment I'm confused, like an expert sitting next to me. Then it banks a question from the passage and quizzes me a week later. Includes a zero-dependency generator that turns banked questions into a self-contained quiz.">
+<meta name="description" content="A study workflow that replaced hand-written notes: it reads the course page I'm on by itself with nothing to paste or screenshot, says it back shorter and in plainer words, and lets me stop and ask anything the moment I'm confused, like an expert sitting next to me. Then it banks a question from the passage and quizzes me a week later. Includes a zero-dependency generator that turns banked questions into a self-contained quiz.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Spline+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -20,7 +20,7 @@
   <header class="hero">
     <p class="eyebrow reveal">Learning workflow · personal tooling</p>
     <h1 class="reveal">Study Desk</h1>
-    <p class="lede reveal">Copying a page into a notebook is the slowest way to learn it, and I did it for about two weeks before I stopped. The course is already software. The material, the quizzes, the progress bar, all of it. So the studying should be too. What I use instead <b>reads the page I'm on</b>, says it back <b>shorter and in plainer words</b>, and lets me <b>stop and ask it anything</b> the moment I'm confused, like turning to someone sitting next to me who already knows the whole subject. Then it banks a question from the passage and <b>quizzes me</b> a week later, once I've started to forget.</p>
+    <p class="lede reveal">Copying a page into a notebook is the slowest way to learn it, and I did it for about two weeks before I stopped. The course is already software. The material, the quizzes, the progress bar, all of it. So the studying should be too. What I use instead <b>reads the page I'm on by itself</b>, with nothing to paste or screenshot, says it back <b>shorter and in plainer words</b>, and lets me <b>stop and ask it anything</b> the moment I'm confused, like turning to someone sitting next to me who already knows the whole subject. Then it banks a question from the passage and <b>quizzes me</b> a week later, once I've started to forget.</p>
     <div class="reveal"><span class="status"><span class="dot"></span> In daily use · live quiz demo · sample questions</span></div>
     <p class="honest reveal" style="margin:12px 0 0">The course, the provider and the subject are deliberately left out, and none of my real study material is published. The demo is the real generator run against a <b>sample bank written for this page</b>.</p>
     <p class="started reveal"><b>Built</b> August 2026 · self-directed</p>
@@ -39,7 +39,7 @@
   <section id="build">
     <p class="label">The loop</p>
     <ol class="steps">
-      <li><b>It reads the page I'm actually on.</b> I click through the course myself and it reads what's on screen, including the parts below the fold I'd otherwise skim.<span class="sub">Read-only, and it stays that way. It doesn't click, open tabs, or drive my browser. I tried letting it and hated it.</span></li>
+      <li><b>It reads the page I'm actually on, by itself.</b> I click Next and it goes. Nothing to paste, nothing to screenshot, no telling it I've moved.<span class="sub">Read-only, and it stays that way. It doesn't click, open tabs, or drive my browser. I tried letting it and hated it.</span></li>
       <li><b>It says the page back shorter.</b> Plain wording, and only the things likely to matter later. This is the part that replaced the notebook.</li>
       <li><b>I ask it whatever didn't land.</b> Right then, on the page I'm looking at. This is the part I underrated going in and it's now the reason I'd never go back.<span class="sub">More on this below.</span></li>
       <li><b>It banks a question.</b> Written from the passage I just read, while the passage is still on screen.</li>
@@ -47,6 +47,13 @@
       <li><b>When I get one wrong, we argue about it.</b> I push back, it shows me the passage, and whichever of us was wrong, the <b>reason</b> goes in the tracker.</li>
     </ol>
     <p class="prose" style="margin-top:18px">The last three needed real files behind them, because a chat window forgets and I needed something that doesn't.</p>
+  </section>
+
+  <section>
+    <p class="label">Nothing to paste</p>
+    <p class="prose">The setup most people end up with is screenshot the page, paste it in, type out what you want, read the reply, go back. That's a second job running alongside the one you're trying to do, and it's why most people try studying this way once and quit.</p>
+    <p class="prose">Mine watches the same page I'm reading. I click Next and it goes on its own. I never tell it I've moved, never paste anything, never take a screenshot. The material doesn't have to be re-fed because it's already looking at it.</p>
+    <p class="prose">That sounds like a small convenience and it isn't. Every one of those hand-offs pulls your attention off the content and onto the logistics of moving text between two windows. You only get to concentrate on one thing, and I want that thing to be the material. The first version polled on a 60-second timer and was somehow worse than nothing, because it either summarized a page I'd already left or made me sit and wait on it. Firing when I turn the page is the only cadence that disappears.</p>
   </section>
 
   <section>
@@ -88,7 +95,6 @@
     <p class="label">Decisions I had to make</p>
     <ol class="steps">
       <li><b>Read-only, always.</b> Early on I let it drive the browser and immediately turned that off. It opened tabs and moved things while I was mid-page. Watching and summarizing is the whole job.</li>
-      <li><b>Trigger on my click, not on a timer.</b> The first version polled every 60 seconds, which meant either stale summaries or wasted runs. Firing when I advance the page is the only cadence that matches how I actually read.</li>
       <li><b>Route the model to the material.</b> Most pages are definitions, and a smaller, faster model handles them for a fraction of the cost. I asked it to <b>tell me when to switch up</b> for something genuinely conceptual rather than silently doing it. Knowing when the cheap option isn't good enough is the actual skill.</li>
       <li><b>Keep the state in files, not in chat.</b> The bank and the tracker are plain JSON and markdown on disk. Sessions end. The files don't.</li>
     </ol>
@@ -96,7 +102,8 @@
 
   <section>
     <p class="label">Why this is on a software portfolio</p>
-    <p class="prose">Because it's the clearest thing I've built where I was the user, so there was nowhere to hide. It also happens to be a small version of what I want to do professionally: watch a process someone does by hand, work out which part is worth automating, and build only that. I automated the transcribing and the remembering. I left the arguing and the getting-it-wrong alone, because that's where the learning is.</p>
+    <p class="prose">It's my favorite thing I've made, and it's the one I actually use the most, by a distance. That's a strange thing to say about something with no installer and no UI of its own. But it's the clearest project I have where I was the user, so there was nowhere to hide behind a nice screenshot: either it saved me time this week or it didn't.</p>
+    <p class="prose">It's also a small version of what I want to do professionally. Watch a process someone does by hand, work out which part is worth automating, and build only that. I automated the transcribing and the remembering. I deliberately left the arguing and the getting-it-wrong alone, because that's where the learning actually happens.</p>
   </section>
 
   <section>
