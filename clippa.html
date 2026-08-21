@@ -25,8 +25,8 @@
     <p class="honest reveal" style="margin:12px 0 0">It is a desktop app, so there is no web demo to click. What follows is the build, the engineering decisions, and the test evidence.</p>
     <p class="started reveal"><b>Built</b> July 2026 · self-directed</p>
     <div class="actions reveal">
-      <a class="btn btn-primary" href="#build">See how it is built <span class="arr">↓</span></a>
-      <a class="btn btn-ghost" href="#verified">See it verified ↓</a>
+      <a class="btn btn-primary" href="#verified">See it verified <span class="arr">↓</span></a>
+      <a class="btn btn-ghost" href="https://github.com/kellenp/clippa" target="_blank" rel="noopener">Source code ↗</a>
     </div>
   </header>
 
@@ -112,7 +112,7 @@
         <li>The installer is <b>large</b>, around 346 MB, because FFmpeg and the transcription model ship inside it. That is the price of working offline.</li>
         <li>The bundled transcription model is <b>English-only</b>. On other languages it can return nonsense, so the ranking prompt is written to fall back to loudness order when the transcript looks unusable.</li>
         <li>It is <b>unsigned</b>, so Windows SmartScreen warns on first run.</li>
-        <li><b>Not published as a public repo yet.</b> Happy to walk through the source directly.</li>
+        <li>The repo carries <b>source only</b> — the installers, the bundled FFmpeg and the whisper model are all gitignored, so a clone needs <code>npm ci</code> and the fetch scripts before it will build.</li>
       </ul>
     </div>
     <p class="honest" style="margin-top:14px">Self-directed project, built with AI-assisted development.</p>
