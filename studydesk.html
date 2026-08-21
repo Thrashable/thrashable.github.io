@@ -21,11 +21,11 @@
     <p class="eyebrow reveal">Learning workflow · personal tooling</p>
     <h1 class="reveal">Study Desk</h1>
     <p class="lede reveal">Copying a page into a notebook is the slowest way to learn it, and I did it for about two weeks before I stopped. The course is already software. The material, the quizzes, the progress bar, all of it. So the studying should be too. What I use instead <b>reads the page I'm on by itself</b>, with nothing to paste or screenshot, says it back <b>shorter and in plainer words</b>, and lets me <b>stop and ask it anything</b> the moment I'm confused, like turning to someone sitting next to me who already knows the whole subject. Then it banks a question from the passage and <b>quizzes me</b> a week later, once I've started to forget.</p>
-    <div class="reveal"><span class="status"><span class="dot"></span> In daily use · live quiz demo · sample questions</span></div>
-    <p class="honest reveal" style="margin:12px 0 0">The course, the provider and the subject are deliberately left out, and none of my real study material is published. The demo is the real generator run against a <b>sample bank written for this page</b>.</p>
+    <div class="reveal"><span class="status"><span class="dot"></span> In daily use · interactive walkthrough · neutral sample material</span></div>
+    <p class="honest reveal" style="margin:12px 0 0">The course, the provider and the subject are deliberately left out, and none of my real study material is published. The walkthrough below replays the real loop with the course material swapped for a <b>neutral sample page</b>.</p>
     <p class="started reveal"><b>Built</b> August 2026 · self-directed</p>
     <div class="actions reveal">
-      <a class="btn btn-primary" href="/studydesk/" target="_blank" rel="noopener">Try the generated quiz <span class="arr">→</span></a>
+      <a class="btn btn-primary" href="/studydesk/" target="_blank" rel="noopener">Walk through one page-turn <span class="arr">→</span></a>
       <a class="btn btn-ghost" href="https://github.com/kellenp/studydesk" target="_blank" rel="noopener">Source code ↗</a>
     </div>
   </header>
@@ -53,6 +53,8 @@
     <p class="label">Nothing to paste</p>
     <p class="prose">The setup most people end up with is screenshot the page, paste it in, type out what you want, read the reply, go back. That's a second job running alongside the one you're trying to do, and it's why most people try studying this way once and quit.</p>
     <p class="prose">Mine watches the same page I'm reading. I click Next and it goes on its own. I never tell it I've moved, never paste anything, never take a screenshot. The material doesn't have to be re-fed because it's already looking at it.</p>
+    <p class="prose">The piece that does this is a small <b>PowerShell watcher</b> built on <b>Windows UI Automation</b>. It finds the right browser window by reading the omnibox, then pulls the page's text straight out of <b>Chrome's accessibility tree</b>. No screenshot, no OCR, no clipboard, and nothing for me to trigger. Read-only isn't a promise in a prompt here, it's a property of the mechanism: the script has no code path that clicks, types, opens a tab, or takes focus.</p>
+    <p class="prose">Most of its length is the unglamorous part. The course is a single-page app, so the text arrives after the URL does, and it polls until the page has read the same twice before believing it. It re-checks the URL afterwards in case I clicked ahead while it was waiting. If a read comes back looking like the page I was already on, it treats it as a glitch and keeps waiting rather than summarizing the same page twice. And it classifies the URL as material, question, or section-complete, so it knows to stay quiet on a quiz page instead of helpfully spoiling the answer.</p>
     <p class="prose">That sounds like a small convenience and it isn't. Every one of those hand-offs pulls your attention off the content and onto the logistics of moving text between two windows. You only get to concentrate on one thing, and I want that thing to be the material. The first version polled on a 60-second timer and was somehow worse than nothing, because it either summarized a page I'd already left or made me sit and wait on it. Firing when I turn the page is the only cadence that disappears.</p>
   </section>
 
@@ -72,9 +74,9 @@
     <p class="prose">It refuses to run if any id is missing and prints exactly which ones, so a typo fails loudly instead of quietly handing me a shorter quiz and letting me think I covered the chapter.</p>
     <p class="prose">The quiz itself shows one question at a time, reveals the explanation the moment I answer, and ends on a review of <b>only the ones I missed</b>, plus a retake. It escapes what it interpolates, follows light and dark, and keeps visible focus rings so it's usable from the keyboard.</p>
     <div class="actions">
-      <a class="btn btn-primary" href="/studydesk/" target="_blank" rel="noopener">Try the generated quiz <span class="arr">→</span></a>
+      <a class="btn btn-primary" href="/studydesk/" target="_blank" rel="noopener">Walk through one page-turn <span class="arr">→</span></a>
     </div>
-    <p class="honest" style="margin-top:14px">That demo is the real generator, unmodified, run against a sample bank of web-fundamentals questions I wrote for this page. My own bank stays private.</p>
+    <p class="honest" style="margin-top:14px">The <a href="/studydesk/quiz.html" target="_blank" rel="noopener">sample quiz</a> is this generator’s real output, unmodified, run against a bank of web-fundamentals questions I wrote for this page. My own bank stays private.</p>
   </section>
 
   <section>
@@ -118,7 +120,7 @@
 
   <section>
     <p class="label">Built with</p>
-    <div class="pills"><span class="pill">Node</span><span class="pill">Vanilla JS</span><span class="pill">JSON data modeling</span><span class="pill">Zero-dependency HTML output</span><span class="pill">Claude Code</span><span class="pill">Scheduled / triggered runs</span><span class="pill">Accessible markup</span></div>
+    <div class="pills"><span class="pill">PowerShell</span><span class="pill">Windows UI Automation</span><span class="pill">Accessibility-tree scraping</span><span class="pill">Node</span><span class="pill">Vanilla JS</span><span class="pill">JSON data modeling</span><span class="pill">Zero-dependency HTML output</span><span class="pill">Claude Code</span><span class="pill">Accessible markup</span></div>
   </section>
 
   <section>
@@ -126,7 +128,8 @@
     <div class="callout">
       <p class="prose" style="margin:0"><b>Personal tooling, in daily use.</b> The generator demo above is live and runs the real code.</p>
       <ul>
-        <li>The reading and summarizing step is a <b>workflow I designed</b> on top of an existing agent, not a screen-reader I wrote. The code here is the generator, the bank and the tracker.</li>
+        <li>The page-reading and the quiz generation are mine. The <b>summarizing and answering</b> is a Claude agent I direct, not a model I built. What I wrote is the watcher, the generator, the bank format and the tracker discipline around it.</li>
+        <li>The watcher is <b>Windows and Chrome only</b>, because it leans on UI Automation and Chrome's accessibility tree. It also depends on the site exposing readable text there, which not every site does.</li>
         <li>The bank is <b>hand-curated per chapter</b>. That's deliberate, since the whole point is that questions come from the real passage, but it doesn't scale without me sitting there.</li>
         <li>The retrieval schedule is <b>a judgment call read off a table</b>, not a real spaced-repetition algorithm. No SM-2 here.</li>
         <li>The generated quiz has <b>no persistence</b>. Each file is one-shot and results go into the tracker by hand.</li>
@@ -142,6 +145,6 @@
   </section>
 </div>
 
-<footer><div class="wrap">Study Desk · part of <a href="/">Kellen Poole's portfolio</a> · <a href="/studydesk/" target="_blank" rel="noopener">quiz demo</a></div></footer>
+<footer><div class="wrap">Study Desk · part of <a href="/">Kellen Poole's portfolio</a> · <a href="/studydesk/" target="_blank" rel="noopener">walkthrough</a></div></footer>
 </body>
 </html>

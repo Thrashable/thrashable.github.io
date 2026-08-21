@@ -1,216 +1,363 @@
-<title>Study Desk — sample quiz</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Desk — replay one page-turn</title>
+<meta name="description" content="A replay of one page-turn in the Study Desk loop: the watcher fires, the page collapses into plain words, you ask what didn't land, the question gets banked, and a week later it comes back.">
 <style>
 :root{
-  --paper:#EDEFEA; --surface:#F8F9F5; --ink:#1C1F1B; --ink-muted:#5B6058;
-  --border:#C7CBC0; --accent:#2B4A6B; --accent-ink:#F3F7FB;
-  --correct:#3A6B4A; --correct-bg:#E4EDE3; --incorrect:#A63B2E; --incorrect-bg:#F5E4DF;
-  --font-display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
-  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  --font-mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;
+  --paper:#EDEFEA; --surface:#F8F9F5; --surface-2:#E7EAE2; --ink:#1C1F1B; --muted:#5B6058; --faint:#858B80;
+  --line:#D5D9CE; --line-strong:#C0C5B7; --accent:#0f6e56; --accent-soft:rgba(15,110,86,.12); --accent-ink:#fff;
+  --gold:#9A6B12; --gold-soft:rgba(154,107,18,.12);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --paper:#15181A; --surface:#1D2124; --ink:#E7E9E2; --ink-muted:#9AA097;
-    --border:#33383A; --accent:#82ACCF; --accent-ink:#0F1A22;
-    --correct:#8FCB9C; --correct-bg:#1E2B21; --incorrect:#E19684; --incorrect-bg:#2E1F1B;
+    --paper:#15181A; --surface:#1D2124; --surface-2:#24292C; --ink:#E7E9E2; --muted:#9AA097; --faint:#767C73;
+    --line:#2F3437; --line-strong:#3D4347; --accent:#5FBFA0; --accent-soft:rgba(95,191,160,.14); --accent-ink:#0B1714;
+    --gold:#D9A441; --gold-soft:rgba(217,164,65,.14);
   }
 }
 :root[data-theme="dark"]{
-  --paper:#15181A; --surface:#1D2124; --ink:#E7E9E2; --ink-muted:#9AA097;
-  --border:#33383A; --accent:#82ACCF; --accent-ink:#0F1A22;
-  --correct:#8FCB9C; --correct-bg:#1E2B21; --incorrect:#E19684; --incorrect-bg:#2E1F1B;
+  --paper:#15181A; --surface:#1D2124; --surface-2:#24292C; --ink:#E7E9E2; --muted:#9AA097; --faint:#767C73;
+  --line:#2F3437; --line-strong:#3D4347; --accent:#5FBFA0; --accent-soft:rgba(95,191,160,.14); --accent-ink:#0B1714;
+  --gold:#D9A441; --gold-soft:rgba(217,164,65,.14);
 }
 *{box-sizing:border-box}
-body{background:var(--paper);color:var(--ink);font-family:var(--font-body);margin:0;padding:2.5rem 1.25rem;display:flex;justify-content:center}
-.sheet{width:100%;max-width:600px}
-.eyebrow{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--font-mono);font-size:12px;letter-spacing:.04em;color:var(--ink-muted);border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:22px}
-.eyebrow .tally{font-variant-numeric:tabular-nums;color:var(--ink)}
-h1{font-family:var(--font-display);font-weight:400;font-size:25px;line-height:1.35;margin:0 0 22px;text-wrap:balance}
-.options{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
-.opt{border-bottom:1px solid var(--border)}
-.opt button{width:100%;text-align:left;background:none;border:none;border-left:3px solid transparent;padding:13px 14px 13px 16px;font-family:var(--font-body);font-size:15px;color:var(--ink);cursor:pointer;display:flex;gap:10px}
-.opt button:hover:not(:disabled){background:var(--surface)}
-.opt button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.opt button:disabled{cursor:default}
-.opt .k{font-family:var(--font-mono);color:var(--ink-muted);flex:0 0 auto}
-.opt.correct button{background:var(--correct-bg);border-left-color:var(--correct)}
-.opt.correct .k,.opt.correct .label{color:var(--correct)}
-.opt.incorrect button{background:var(--incorrect-bg);border-left-color:var(--incorrect)}
-.opt.incorrect .k,.opt.incorrect .label{color:var(--incorrect)}
-.explain{font-size:13.5px;line-height:1.55;color:var(--ink-muted);background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:12px 14px;margin-top:16px;display:none}
-.explain b{color:var(--ink);font-weight:600}
-.explain.show{display:block}
-.foot{display:flex;justify-content:flex-end;margin-top:20px;min-height:38px}
-.next{font-family:var(--font-body);font-size:14px;font-weight:600;color:var(--accent-ink);background:var(--accent);border:none;border-radius:4px;padding:10px 18px;cursor:pointer;display:none}
-.next.show{display:inline-block}
-.next:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.score-line{font-family:var(--font-mono);font-size:15px;color:var(--ink-muted);margin-bottom:24px}
-.score-line b{color:var(--ink);font-variant-numeric:tabular-nums}
-.review{border-top:1px solid var(--border)}
-.review-item{border-bottom:1px solid var(--border);padding:14px 2px}
-.review-item .q{font-family:var(--font-display);font-size:15px;margin:0 0 6px}
-.review-item .a{font-size:13px;color:var(--ink-muted);margin:0 0 6px}
-.review-item .a b{color:var(--correct)}
-.retake{font-family:var(--font-body);font-size:14px;font-weight:600;color:var(--accent-ink);background:var(--accent);border:none;border-radius:4px;padding:10px 18px;cursor:pointer;margin-top:22px}
-.perfect{color:var(--correct)}
-</style>
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55;padding:26px 18px 60px}
+.wrap{max-width:1020px;margin:0 auto}
+a{color:var(--accent)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:20px}
+.top .back{font-size:13px;text-decoration:none;color:var(--muted)}
+.top .back:hover{color:var(--accent)}
+h1{font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.25;margin:0}
+.sub{font-size:14.5px;color:var(--muted);margin:8px 0 0;max-width:70ch}
+.note{font-size:13px;color:var(--faint);margin:10px 0 0;max-width:74ch;border-left:2px solid var(--line-strong);padding-left:11px}
 
-<div class="sheet" id="app"></div>
+/* step rail */
+.rail{display:flex;gap:6px;flex-wrap:wrap;margin:22px 0 16px;padding:0;list-style:none}
+.rail li{font-family:var(--mono);font-size:11px;letter-spacing:.03em;color:var(--faint);border:1px solid var(--line);border-radius:999px;padding:4px 11px;background:var(--surface);white-space:nowrap}
+.rail li.on{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
+.rail li.done{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+
+/* watcher strip */
+.watch{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:14px;color:var(--muted);min-height:42px}
+.watch b{color:var(--ink);font-weight:500}
+.watch .ok{color:var(--accent)}
+.watch .line{opacity:0;animation:fade .35s ease forwards}
+@keyframes fade{to{opacity:1}}
+
+/* panes */
+.panes{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+@media (max-width:760px){.panes{grid-template-columns:1fr}}
+.pane{background:var(--surface);border:1px solid var(--line);border-radius:13px;overflow:hidden;display:flex;flex-direction:column;min-height:260px}
+.pane-h{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);padding:10px 15px;border-bottom:1px solid var(--line);background:var(--surface-2);display:flex;justify-content:space-between;gap:10px}
+.pane-b{padding:15px 16px;font-size:14px}
+.raw{font-size:12.7px;line-height:1.62;color:var(--muted);max-height:300px;overflow:auto}
+.raw h4{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin:0 0 9px;font-weight:500;letter-spacing:.03em}
+.raw p{margin:0 0 10px}
+.raw .more{color:var(--faint);font-style:italic}
+.out p{margin:0 0 11px}
+.out .lead{font-family:var(--mono);font-size:12.5px;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:2px 7px;display:inline-block;margin-bottom:2px}
+.out b{color:var(--ink)}
+.empty{color:var(--faint);font-size:13.5px;font-style:italic;padding:6px 0}
+.cursor::after{content:"▌";color:var(--accent);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* buttons */
+.btn{font-family:var(--sans);font-size:14px;font-weight:600;border:none;border-radius:9px;padding:10px 17px;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-strong)}
+.btn:focus-visible,.ask:focus-visible,.opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.hint{font-size:13px;color:var(--faint)}
+
+/* ask chips */
+.asks{display:flex;flex-direction:column;gap:7px;margin-top:13px}
+.ask{text-align:left;font-family:var(--sans);font-size:13.5px;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:9px;padding:9px 13px;cursor:pointer;display:flex;gap:9px;align-items:baseline}
+.ask:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft)}
+.ask:disabled{opacity:.45;cursor:default}
+.ask .q{color:var(--accent);font-family:var(--mono);font-size:12px;flex:0 0 auto}
+.answer{border-left:2px solid var(--accent);background:var(--surface-2);border-radius:0 9px 9px 0;padding:12px 14px;margin-top:11px;font-size:13.6px;color:var(--muted)}
+.answer b{color:var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:12.6px;margin-top:9px}
+th,td{border:1px solid var(--line-strong);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:var(--surface);color:var(--ink);font-weight:600;font-family:var(--mono);font-size:11px;letter-spacing:.03em}
+td{color:var(--muted)}
+
+/* banked card + quiz + tracker */
+.card{background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;padding:15px 17px;margin-top:14px}
+.card-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--faint);margin-bottom:10px}
+.flag{color:var(--gold);background:var(--gold-soft);border-radius:999px;padding:2px 9px}
+.qtext{font-family:var(--serif);font-size:16px;margin:0 0 12px}
+.opts{list-style:none;margin:0;padding:0}
+.opts li{border-top:1px solid var(--line)}
+.opt{width:100%;text-align:left;background:none;border:none;border-left:3px solid transparent;padding:10px 12px;font-family:var(--sans);font-size:13.8px;color:var(--ink);cursor:pointer;display:flex;gap:9px}
+.opt:hover:not(:disabled){background:var(--surface-2)}
+.opt:disabled{cursor:default}
+.opt .k{font-family:var(--mono);color:var(--faint)}
+li.right .opt{background:var(--accent-soft);border-left-color:var(--accent)}
+li.right .k{color:var(--accent)}
+li.wrong .opt{background:rgba(166,59,46,.1);border-left-color:#A63B2E}
+li.wrong .k{color:#A63B2E}
+.tracker{font-family:var(--mono);font-size:12.4px;background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:13px 15px;margin-top:14px;white-space:pre-wrap;line-height:1.65;color:var(--muted)}
+.tracker b{color:var(--ink);font-weight:600}
+.done-msg{margin-top:18px;padding:15px 17px;border:1px solid var(--accent);background:var(--accent-soft);border-radius:12px;font-size:14px}
+.done-msg b{color:var(--ink)}
+.hide{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <h1>One page-turn, replayed</h1>
+    </div>
+    <a class="back" href="/studydesk.html">← Back to the case study</a>
+  </div>
+
+  <p class="sub">This is the loop I use instead of taking notes, walked through one page at a time. Click the button and follow it down.</p>
+  <p class="note">The steps and the mechanism are real. The course material is not mine — I swapped in a page about HTTP caching so nothing about what I'm actually studying is published here. If you write software you may well get the quiz at the end wrong, which is rather the point.</p>
+
+  <ul class="rail" id="rail">
+    <li data-s="1">1 · It reads the page</li>
+    <li data-s="2">2 · Says it back shorter</li>
+    <li data-s="3">3 · I ask what didn't land</li>
+    <li data-s="4">4 · It banks a question</li>
+    <li data-s="5">5 · A week later</li>
+  </ul>
+
+  <div class="watch" id="watch"><span class="line">watcher idle · waiting for a page change</span></div>
+
+  <div class="panes">
+    <div class="pane">
+      <div class="pane-h"><span>The course page</span><span id="wc"></span></div>
+      <div class="pane-b raw" id="raw"><p class="empty">Nothing yet. Click “Turn the page”.</p></div>
+    </div>
+    <div class="pane">
+      <div class="pane-h"><span>What I got back</span><span id="outmeta"></span></div>
+      <div class="pane-b out" id="out"><p class="empty">Nothing yet.</p></div>
+    </div>
+  </div>
+
+  <div class="bar">
+    <button class="btn" id="go">Turn the page →</button>
+    <span class="hint" id="hint">I click Next in the course. I don’t paste anything, and I don’t tell it I moved.</span>
+  </div>
+
+  <div id="stage3" class="hide">
+    <div class="card">
+      <div class="card-h"><span>ASK IT ANYTHING · WHILE THE PAGE IS STILL OPEN</span></div>
+      <div class="asks">
+        <button class="ask" data-a="0"><span class="q">?</span><span>I don’t get why no-cache still caches.</span></button>
+        <button class="ask" data-a="1"><span class="q">?</span><span>What does “revalidate” actually mean here?</span></button>
+        <button class="ask" data-a="2"><span class="q">⟳</span><span>That didn’t help. Show me it as a table.</span></button>
+      </div>
+      <div id="answers"></div>
+    </div>
+    <div class="bar"><button class="btn ghost" id="toBank" disabled>Bank a question from this page →</button><span class="hint" id="hint3">Ask at least one thing first.</span></div>
+  </div>
+
+  <div id="stage4" class="hide">
+    <div class="card">
+      <div class="card-h"><span>BANKED · q-047 · CH. 2 · CACHING</span><span class="flag">trap</span></div>
+      <p style="margin:0 0 6px;font-size:13.8px;color:var(--muted)">Written from the passage above, while the passage was still on screen. It carries the explanation it came from, which is the receipt that nothing was invented.</p>
+      <p style="margin:0;font-size:13.4px;color:var(--faint);font-family:var(--mono)">flagged <b style="color:var(--gold)">trap</b> — tests a commonly-confused pair, so review weights it heavier</p>
+    </div>
+    <div class="bar"><button class="btn" id="skip">Skip ahead 7 days →</button><span class="hint">It doesn’t quiz me now, while I’d just be parroting it back.</span></div>
+  </div>
+
+  <div id="stage5" class="hide">
+    <div class="card">
+      <div class="card-h"><span>REVIEW · DUE TODAY · MIXED WITH OLDER CHAPTERS</span><span class="flag">trap</span></div>
+      <p class="qtext">A response carries <code>Cache-Control: no-cache</code>. What is a cache allowed to do with it?</p>
+      <ul class="opts" id="opts"></ul>
+      <div id="verdict"></div>
+    </div>
+  </div>
+
+  <div id="stage6" class="hide">
+    <div class="done-msg">
+      <p style="margin:0 0 9px"><b>That’s the loop.</b> Read the page, get it back in plainer words, ask whatever didn’t land, bank a question from the passage, and get tested on it once you’ve started to forget. Anything you got wrong is logged by <b>cause</b>, so the next quiz knows what to contain.</p>
+      <p style="margin:0;font-size:13.5px;color:var(--muted)">The quizzes themselves are one self-contained HTML file, generated from the bank by a 159-line Node script with no dependencies. <a href="quiz.html">Here’s a full one</a>, or read <a href="/studydesk.html">the case study</a>.</p>
+    </div>
+  </div>
+
+</div>
 
 <script>
-var QUESTIONS = [
-  {
-    "q": "A resource has moved permanently to a new URL and you want clients and search engines to update their records. Which status code is correct?",
-    "options": [
-      "302 Found",
-      "301 Moved Permanently",
-      "307 Temporary Redirect",
-      "410 Gone"
-    ],
-    "correct": 1,
-    "explain": "301 is the permanent redirect — caches and crawlers update the stored URL. 302 and 307 are temporary, so the original URL is kept. 410 means the resource is gone with no forwarding address.",
-    "chapter": 1
-  },
-  {
-    "q": "A request arrives with no credentials at all for a protected endpoint. Which is the correct response?",
-    "options": [
-      "403 Forbidden",
-      "400 Bad Request",
-      "401 Unauthorized",
-      "404 Not Found"
-    ],
-    "correct": 2,
-    "explain": "401 means \"you have not authenticated\" — the server is asking who you are. 403 means \"I know who you are and you still may not have this.\" The confusable pair is which one implies a known identity: 403 does, 401 does not.",
-    "chapter": 1
-  },
-  {
-    "q": "Which statement about idempotency is correct?",
-    "options": [
-      "POST is idempotent because the server can deduplicate it",
-      "PUT is idempotent — repeating the same request leaves the same end state",
-      "Idempotent and safe mean the same thing",
-      "Only GET can be idempotent"
-    ],
-    "correct": 1,
-    "explain": "Idempotent means repeating the request produces the same end state, not that it has no effect. PUT and DELETE qualify; POST does not. Safe is the stricter idea — no state change at all — which is why GET is both safe and idempotent while PUT is only idempotent.",
-    "chapter": 2
-  },
-  {
-    "q": "What does `Cache-Control: no-store` instruct a client to do?",
-    "options": [
-      "Cache the response but revalidate before every use",
-      "Cache the response for zero seconds, then reuse it if the server is down",
-      "Never write the response to any cache at all",
-      "Cache only in the browser, never in a shared proxy"
-    ],
-    "correct": 2,
-    "explain": "no-store forbids writing the response anywhere. The one that caches-but-always-revalidates is no-cache — the names read backwards from what they do, which is why they get mixed up. private is the directive that restricts storage to the browser rather than a shared proxy.",
-    "chapter": 2
-  },
-  {
-    "q": "A browser sends an OPTIONS request before your actual PUT request. What is it doing?",
-    "options": [
-      "Checking whether the server is reachable",
-      "A CORS preflight, asking whether the cross-origin request is permitted",
-      "Negotiating which HTTP version to use",
-      "Requesting the list of methods for documentation"
-    ],
-    "correct": 1,
-    "explain": "That is a CORS preflight. Non-simple cross-origin requests — anything beyond a basic GET/POST with plain content types — trigger an OPTIONS probe first, and the browser only sends the real request if the response allows the method and headers.",
-    "chapter": 3
-  },
-  {
-    "q": "Which cookie attribute stops JavaScript on the page from reading a cookie?",
-    "options": [
-      "Secure",
-      "SameSite=Strict",
-      "HttpOnly",
-      "Path=/"
-    ],
-    "correct": 2,
-    "explain": "HttpOnly hides the cookie from document.cookie, which limits what an XSS payload can steal. Secure only requires HTTPS, and SameSite governs whether the cookie rides along on cross-site requests — a different attack (CSRF), not script access.",
-    "chapter": 3
-  },
-  {
-    "q": "Body text must meet WCAG 2.1 AA. What is the minimum contrast ratio against its background?",
-    "options": [
-      "3:1",
-      "4.5:1",
-      "7:1",
-      "21:1"
-    ],
-    "correct": 1,
-    "explain": "AA requires 4.5:1 for normal body text. 3:1 is the relaxed bar for large text and UI components; 7:1 is the stricter AAA target. The trap is quoting the large-text number for body copy.",
-    "chapter": 4
-  },
-  {
-    "q": "Why is `outline: none` on a focusable element a problem?",
-    "options": [
-      "It breaks the CSS box model",
-      "It removes the visible focus indicator keyboard users rely on to know where they are",
-      "It prevents the element from receiving focus at all",
-      "It is ignored by every modern browser"
-    ],
-    "correct": 1,
-    "explain": "The element still takes focus — the user just cannot see it, so anyone navigating by keyboard loses their place. If the default ring clashes with a design, replace it with a visible :focus-visible style rather than removing it.",
-    "chapter": 4
-  }
+var RAW = [
+  '<h4>7.2 — RESPONSE DIRECTIVES: no-store AND no-cache</h4>',
+  '<p>The <b>no-store</b> response directive indicates that any caches of any kind (private or shared) ought not to store this response. The directive applies to both the immediate request and any subsequent request that would otherwise be satisfied from a stored response. An intermediary MUST NOT write the representation to non-volatile storage, and SHOULD make a best-effort attempt to remove the information from volatile storage as promptly as possible after forwarding it.</p>',
+  '<p>The <b>no-cache</b> response directive, by contrast, indicates that the response MUST NOT be used to satisfy any other request without forwarding it for validation and receiving a successful response. This directive does not prevent a cache from storing the response; rather, it constrains the conditions under which a stored response may subsequently be reused. A cache MUST revalidate the stored response with the origin server prior to each subsequent reuse.</p>',
+  '<p>Note further that the <b>private</b> response directive is distinct from both of the foregoing, and governs which classes of cache may store a response rather than whether a response may be stored at all…</p>',
+  '<p class="more">[ + 380 more words on this page ]</p>'
+].join('');
+
+var SUMMARY = [
+  '<p><span class="lead">no-store</span><br>Never write it down. Not to disk, not to memory, nowhere.</p>',
+  '<p><span class="lead">no-cache</span><br>You <b>can</b> store it. You just have to check with the server before every reuse.</p>',
+  '<p><b>The names read backwards from what they do.</b> no-cache still caches. That is the whole trap, and it is the bit worth remembering.</p>',
+  '<p><span class="lead">private</span><br>A third thing entirely: it is about <b>who</b> may store it (your browser yes, a shared proxy no), not whether it may be stored.</p>'
+].join('');
+
+var ANSWERS = [
+  '<div class="answer"><p style="margin:0 0 8px">Because the name is about <b>reuse</b>, not <b>storage</b>. Read it as “no-cache-<i>without-asking</i>”.</p><p style="margin:0">The response goes into the cache like anything else. What is forbidden is handing it to the next request without checking with the server first. The directive that is actually about storage is <b>no-store</b>.</p></div>',
+  '<div class="answer"><p style="margin:0 0 8px">The cache asks the origin server “is my copy still good?”, normally with an <b>If-None-Match</b> or <b>If-Modified-Since</b> header.</p><p style="margin:0">If the server says yes it replies <b>304 Not Modified</b> with no body, and the cache serves its stored copy — so you skipped the download. If it says no, you get a fresh <b>200</b>. So revalidate does not mean “download it again”. It means “check first, download only if stale”.</p></div>',
+  '<div class="answer"><p style="margin:0 0 4px">Fair enough. Same three directives, as a grid:</p><table><thead><tr><th>Directive</th><th>May a cache store it?</th><th>May it reuse without asking?</th></tr></thead><tbody><tr><td><b>no-store</b></td><td>No</td><td>—</td></tr><tr><td><b>no-cache</b></td><td>Yes</td><td>No — must revalidate every time</td></tr><tr><td><b>private</b></td><td>Browser yes, shared proxy no</td><td>Yes, until it expires</td></tr></tbody></table></div>'
 ];
-var CHAPTER_LABEL = "CH. 1-4";
-var idx=0, score=0, answered=false;
-var missed=[];
-var app=document.getElementById("app");
-function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-function render(){
-  if(idx>=QUESTIONS.length){renderDone();return;}
-  var item=QUESTIONS[idx];
-  answered=false;
-  var h="";
-  h+='<div class="eyebrow"><span>'+(idx+1)+" / "+QUESTIONS.length+" &middot; CH. "+item.chapter+'</span>';
-  h+='<span class="tally">SCORE <b>'+score+"</b>/"+idx+"</span></div>";
-  h+="<h1>"+esc(item.q)+"</h1>";
-  h+='<ul class="options">';
-  for(var i=0;i<item.options.length;i++){
-    h+='<li class="opt" data-i="'+i+'"><button type="button"><span class="k">'+String.fromCharCode(65+i)+'</span><span class="label">'+esc(item.options[i])+"</span></button></li>";
+
+var OPTS = [
+  'Nothing — it must not be stored at all.',
+  'Store it, but revalidate with the origin server before every reuse.',
+  'Store it and reuse it freely until it expires.',
+  'Store it only in the browser, never in a shared proxy.'
+];
+var CORRECT = 1;
+
+var WATCH_STEPS = [
+  'URL changed · <b>/courseflow/page/…</b>',
+  'waiting for the page to settle <span class="ok">·</span> text stable after 3 reads',
+  'reading Chrome’s accessibility tree <span class="ok">·</span> no screenshot, no clipboard',
+  'TYPE <b>page</b> <span class="ok">·</span> material, not a quiz — safe to summarize',
+  '<span class="ok">✓ 412 words in. Nothing pasted, nothing clicked.</span>'
+];
+
+var $ = function(id){ return document.getElementById(id); };
+var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var asked = 0;
+
+function rail(step, doneTo){
+  var items = $('rail').children;
+  for (var i = 0; i < items.length; i++){
+    var n = i + 1;
+    items[i].className = n === step ? 'on' : (n <= doneTo ? 'done' : '');
   }
-  h+="</ul>";
-  h+='<div class="explain" id="explain"><b>Why:</b> '+esc(item.explain)+"</div>";
-  h+='<div class="foot"><button class="next" id="next">'+(idx===QUESTIONS.length-1?"See results":"Next question")+" &rarr;</button></div>";
-  app.innerHTML=h;
-  var btns=app.querySelectorAll(".opt button");
-  for(var j=0;j<btns.length;j++){
-    (function(b){b.addEventListener("click",function(){selectAnswer(parseInt(b.parentElement.dataset.i,10));});})(btns[j]);
+}
+
+function watchRun(done){
+  var w = $('watch');
+  w.innerHTML = '';
+  var i = 0;
+  function next(){
+    if (i >= WATCH_STEPS.length){ done(); return; }
+    var d = document.createElement('div');
+    d.className = 'line';
+    d.innerHTML = WATCH_STEPS[i];
+    w.appendChild(d);
+    if (w.children.length > 3) w.removeChild(w.firstChild);
+    i++;
+    setTimeout(next, reduce ? 0 : 520);
   }
-  document.getElementById("next").addEventListener("click",function(){idx++;render();});
+  next();
 }
-function selectAnswer(i){
-  if(answered)return;
-  answered=true;
-  var item=QUESTIONS[idx];
-  var opts=app.querySelectorAll(".opt");
-  for(var k=0;k<opts.length;k++){opts[k].querySelector("button").disabled=true;}
-  opts[item.correct].classList.add("correct");
-  if(i!==item.correct){opts[i].classList.add("incorrect");missed.push(item);}else{score++;}
-  document.getElementById("explain").classList.add("show");
-  document.getElementById("next").classList.add("show");
-}
-function renderDone(){
-  var pct=Math.round((score/QUESTIONS.length)*100);
-  var h='<div class="eyebrow"><span>REVIEW COMPLETE &middot; '+CHAPTER_LABEL+'</span><span class="tally">'+pct+"%</span></div>";
-  h+="<h1>"+(score===QUESTIONS.length?"Clean sweep.":"Review complete.")+"</h1>";
-  h+='<p class="score-line">Final score <b>'+score+"</b> / "+QUESTIONS.length;
-  if(score===QUESTIONS.length){h+=' &mdash; <span class="perfect">nothing decayed.</span>';}
-  h+="</p>";
-  if(missed.length){
-    h+='<div class="review">';
-    for(var m=0;m<missed.length;m++){
-      h+='<div class="review-item"><p class="q">'+esc(missed[m].q)+'</p><p class="a"><b>'+esc(missed[m].options[missed[m].correct])+'</b></p><p class="a">'+esc(missed[m].explain)+"</p></div>";
-    }
-    h+="</div>";
+
+function typeInto(el, html, done){
+  if (reduce){ el.innerHTML = html; done(); return; }
+  el.innerHTML = '';
+  el.className = 'pane-b out cursor';
+  var parts = html.split(/(?=<p>)/);
+  var i = 0;
+  function step(){
+    if (i >= parts.length){ el.className = 'pane-b out'; done(); return; }
+    el.innerHTML += parts[i];
+    i++;
+    setTimeout(step, 430);
   }
-  h+='<button class="retake" id="retake">Retake all '+QUESTIONS.length+"</button>";
-  app.innerHTML=h;
-  document.getElementById("retake").addEventListener("click",function(){idx=0;score=0;missed.length=0;render();});
+  step();
 }
-render();
+
+$('go').addEventListener('click', function(){
+  var b = this;
+  b.disabled = true;
+  $('hint').textContent = 'The watcher noticed by itself. That is the whole point.';
+  rail(1, 0);
+  watchRun(function(){
+    $('raw').innerHTML = RAW;
+    $('wc').textContent = '412 words';
+    rail(2, 1);
+    $('outmeta').textContent = 'writing…';
+    typeInto($('out'), SUMMARY, function(){
+      $('outmeta').textContent = '78 words';
+      rail(3, 2);
+      $('stage3').className = '';
+      $('stage3').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
+    });
+  });
+});
+
+var askBtns = document.querySelectorAll('.ask');
+for (var i = 0; i < askBtns.length; i++){
+  (function(btn){
+    btn.addEventListener('click', function(){
+      btn.disabled = true;
+      var d = document.createElement('div');
+      d.innerHTML = ANSWERS[parseInt(btn.dataset.a, 10)];
+      $('answers').appendChild(d);
+      asked++;
+      $('toBank').disabled = false;
+      $('hint3').textContent = asked === 3 ? 'Asked all three. In practice I keep going until it clicks.' : 'Ask more, or move on.';
+    });
+  })(askBtns[i]);
+}
+
+$('toBank').addEventListener('click', function(){
+  this.disabled = true;
+  rail(4, 3);
+  $('stage4').className = '';
+  $('stage4').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
+});
+
+$('skip').addEventListener('click', function(){
+  this.disabled = true;
+  rail(5, 4);
+  $('stage5').className = '';
+  var ul = $('opts');
+  ul.innerHTML = '';
+  for (var j = 0; j < OPTS.length; j++){
+    (function(k){
+      var li = document.createElement('li');
+      var b = document.createElement('button');
+      b.className = 'opt';
+      b.type = 'button';
+      b.innerHTML = '<span class="k">' + String.fromCharCode(65 + k) + '</span><span>' + OPTS[k] + '</span>';
+      b.addEventListener('click', function(){ answer(k); });
+      li.appendChild(b);
+      ul.appendChild(li);
+    })(j);
+  }
+  $('stage5').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
+});
+
+function answer(pick){
+  var lis = $('opts').children;
+  for (var i = 0; i < lis.length; i++) lis[i].querySelector('.opt').disabled = true;
+  lis[CORRECT].className = 'right';
+  var right = pick === CORRECT;
+  if (!right) lis[pick].className = 'wrong';
+
+  var v = $('verdict');
+  v.innerHTML = '<div class="answer" style="margin-top:14px"><p style="margin:0"><b>Why:</b> no-cache controls <b>reuse</b>, not storage. The directive that forbids storing is <b>no-store</b>. Option D describes <b>private</b>.</p></div>';
+
+  if (right){
+    v.innerHTML += '<div class="tracker"><b>Tracker updated</b>\nCh. 2 · caching — last quizzed: today\nNo new weak spot. Interval extended, returns in ~3 weeks.</div>';
+  } else {
+    v.innerHTML += '<div class="tracker"><b>Tracker updated — known weak spots</b>\n<b>no-cache vs no-store</b>\n  Missed: read the directive name as describing storage.\n  Root cause: the name says “cache”, so I assumed it was\n  the one that stops caching. It governs reuse. no-store\n  is the storage one.\n  Re-test until automatic.</div>';
+  }
+  v.innerHTML += '<p style="margin:14px 0 0;font-size:13.5px;color:var(--muted)">' +
+    (right ? 'Right — so it backs off and asks again later, rather than wasting a slot on something I know.'
+           : 'That is the useful outcome, honestly. It does not log “1/1 wrong”. It logs the assumption that produced the wrong answer, because that is the part I can act on.') +
+    '</p>';
+
+  $('stage6').className = '';
+  rail(0, 5);
+  $('stage6').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
+}
 </script>
+</body>
+</html>
