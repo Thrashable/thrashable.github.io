@@ -268,6 +268,8 @@ footer{border-top:1px solid var(--line); background:var(--bg-2); padding:64px 0 
 .foot-col h4{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); margin-bottom:16px}
 .foot-col a{display:block; color:var(--muted); font-size:13.5px; margin-bottom:10px; transition:color .2s}
 .foot-col a:hover{color:var(--green)}
+.foot-col a.demo{cursor:default}
+.foot-col a.demo:hover{color:var(--muted)}
 .legal{padding-top:26px; display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap}
 .legal p{font-family:var(--mono); font-size:11px; color:var(--faint); line-height:1.7; max-width:62ch}
 .legal .eho{display:flex; align-items:center; gap:8px; color:var(--faint); font-size:11px; font-family:var(--mono)}
@@ -638,9 +640,9 @@ footer{border-top:1px solid var(--line); background:var(--bg-2); padding:64px 0 
       <div class="foot-col">
         <h4>Contact</h4>
         <a href="#sell">Sell a property</a>
-        <a href="tel:#">Call the desk</a>
-        <a href="mailto:#">Email the desk</a>
-        <a href="#">IABS notice</a>
+        <a class="demo" title="Demo only — there is no real desk to call">Call the desk</a>
+        <a class="demo" title="Demo only — there is no real inbox">Email the desk</a>
+        <a class="demo" title="Demo only — a real desk would link its IABS notice here">IABS notice</a>
       </div>
     </div>
     <div class="legal">
