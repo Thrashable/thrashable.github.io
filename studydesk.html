@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0f6e56">
 <title>Study Desk — case study · Kellen Poole</title>
-<meta name="description" content="A study workflow that replaced hand-written notes: it reads the course page I'm on by itself with nothing to paste or screenshot, says it back shorter and in plainer words, and lets me stop and ask anything the moment I'm confused, like an expert sitting next to me. Then it banks a question from the passage and quizzes me a week later. Includes a zero-dependency generator that turns banked questions into a self-contained quiz.">
+<meta name="description" content="A study workflow that replaced hand-written notes: it reads the course page I'm on by itself with nothing to paste, says it back shorter and in plainer words, and lets me stop and ask anything the moment I'm confused. Unlike a chat window it remembers what I've covered, when I last saw it, and the specific assumptions I keep getting wrong, then quizzes me on them a week later.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Spline+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -20,7 +20,7 @@
   <header class="hero">
     <p class="eyebrow reveal">Learning workflow · personal tooling</p>
     <h1 class="reveal">Study Desk</h1>
-    <p class="lede reveal">Copying a page into a notebook is the slowest way to learn it, and I did it for about two weeks before I stopped. The course is already software. The material, the quizzes, the progress bar, all of it. So the studying should be too. What I use instead <b>reads the page I'm on by itself</b>, with nothing to paste or screenshot, says it back <b>shorter and in plainer words</b>, and lets me <b>stop and ask it anything</b> the moment I'm confused, like turning to someone sitting next to me who already knows the whole subject. Then it banks a question from the passage and <b>quizzes me</b> a week later, once I've started to forget.</p>
+    <p class="lede reveal">Copying a page into a notebook is the slowest way to learn it, and I did it for about two weeks before I stopped. The course is already software. The material, the quizzes, the progress bar, all of it. So the studying should be too. What I use instead <b>reads the page I'm on by itself</b>, with nothing to paste or screenshot, says it back <b>shorter and in plainer words</b>, and lets me <b>stop and ask it anything</b> the moment I'm confused, like turning to someone sitting next to me who already knows the whole subject. Then it banks a question from the passage and <b>quizzes me</b> a week later, once I've started to forget. Unlike a chat window, it <b>remembers</b>: what I've covered, when I last saw it, and the specific things I keep getting wrong.</p>
     <div class="reveal"><span class="status"><span class="dot"></span> In daily use · interactive walkthrough · neutral sample material</span></div>
     <p class="honest reveal" style="margin:12px 0 0">The course, the provider and the subject are deliberately left out, and none of my real study material is published. The walkthrough below replays the real loop with the course material swapped for a <b>neutral sample page</b>.</p>
     <p class="started reveal"><b>Built</b> August 2026 · self-directed</p>
@@ -46,7 +46,7 @@
       <li><b>It quizzes me later.</b> Not immediately, when I'd still be parroting. A week or so on, mixed in with older chapters.</li>
       <li><b>When I get one wrong, we argue about it.</b> I push back, it shows me the passage, and whichever of us was wrong, the <b>reason</b> goes in the tracker.</li>
     </ol>
-    <p class="prose" style="margin-top:18px">The last three needed real files behind them, because a chat window forgets and I needed something that doesn't.</p>
+    <p class="prose" style="margin-top:18px">The last three only work because something remembers between sessions. That is the part that makes this a system instead of a habit, and it is the next section.</p>
   </section>
 
   <section>
@@ -69,6 +69,16 @@
   </section>
 
   <section>
+    <p class="label">It remembers, which is the whole difference</p>
+    <p class="prose">Everything above this point you could roughly approximate by pasting a page into a chat window. The reason I'd call this a system rather than a habit is that it doesn't start from zero every time I open it.</p>
+    <p class="prose">Chat is amnesiac by design. Close the window and everything it knew about what you'd covered, what you'd already been tested on, and what you got wrong goes with it. Fine for a one-off question. Useless across a twelve-week course, because the two things I actually want a computer for here are <b>what have I forgotten</b> and <b>what did I get wrong last time</b>, and both of those are questions about the past.</p>
+    <p class="prose">So the state lives in files instead. <b>progress.md</b> holds where I am and a table of when each chapter was first learned and last quizzed. That table is the input to the only scheduling decision the thing makes: what's due. A chapter I was tested on today isn't worth re-testing tomorrow. One I learned three weeks ago and haven't touched since is. <b>question-bank.json</b> holds the questions, 58 of them across 29 topics, each tied to the chapter it came from and flagged if it's one of the ones that bites.</p>
+    <p class="prose">Then the part I didn't expect to matter most: <b>known weak spots</b>. It doesn't log that I got a question wrong. It logs the <b>bad assumption that produced the wrong answer</b>. One of mine reads, in effect: I ranked two competing claims by date, when one of them doesn't compete on date at all. "3/4" tells me nothing I can act on. A named misconception tells the next quiz exactly what to contain.</p>
+    <p class="prose">That file also holds resolved contradictions. Two chapters of the material genuinely disagreed with each other about an exception, and a third passage settled it. Rather than sort it out in my head and forget, the finding and the reasoning went in the file, so the next quiz is built on the right reading and I don't relitigate it with myself a month later.</p>
+    <p class="prose">The bit that compounds is that this gets <b>more useful the longer I go</b>. Generic study advice knows what people in general forget. This knows what I forget, and it's a growing map of the specific places my understanding of the material is wrong.</p>
+  </section>
+
+  <section>
     <p class="label">The generator</p>
     <p class="prose">A 159-line Node script takes a question bank, a title, and a list of question ids, and writes <b>one self-contained HTML file</b>. No build step, no framework, no network call, nothing to install. It opens anywhere and it works, which matters because I wanted to be able to take a quiz on my phone without standing up a server for it.</p>
     <p class="prose">It refuses to run if any id is missing and prints exactly which ones, so a typo fails loudly instead of quietly handing me a shorter quiz and letting me think I covered the chapter.</p>
@@ -84,13 +94,6 @@
     <p class="prose">Questions live in one JSON file. Each carries an id, its chapter, a topic, the question, the options, the correct index, and a short explanation. Mine currently holds <b>58 questions across 29 topics</b>, and the explanations average about <b>110 characters</b>, because a paragraph of justification is just the notebook again.</p>
     <p class="prose">The rule that matters: <b>nothing is invented.</b> Every question has to come from text the course actually served, and the explanation is the receipt. If it can't be written from the passage, the question doesn't go in. A study tool built with an AI assistant is one careless prompt away from confidently testing me on a rule that doesn't exist, and a wrong question is worse than no question, because I'd learn it.</p>
     <p class="prose">The other field earning its place is <code>trap</code>. It flags anything testing an exception, or one of a pair that's easy to mix up, so review can weight them heavier. <b>28 of my 58</b> are flagged, which tells you where the difficulty in this material actually lives.</p>
-  </section>
-
-  <section>
-    <p class="label">The tracker records causes, not scores</p>
-    <p class="prose">One markdown file holds where I am, and a table of when each chapter was first learned and last quizzed. That table decides what's due. A chapter I was quizzed on today isn't worth re-testing tomorrow. One I learned three weeks ago and haven't touched since is.</p>
-    <p class="prose">The section I didn't expect to matter most is <b>known weak spots</b>. It doesn't log that I got a question wrong. It logs the <b>bad assumption that produced the wrong answer</b>. One of mine reads, in effect: I ranked two competing claims by date, when one of them doesn't compete on date at all. That's actionable. "3/4" isn't. A named misconception tells the next quiz exactly what to contain.</p>
-    <p class="prose">It also holds resolved contradictions. Two chapters of the material genuinely disagreed with each other about an exception, and a third passage settled it. Rather than sort it out in my head and forget, the finding and the reasoning went in the file, so the next quiz is built on the right reading and I don't relitigate it with myself in a month.</p>
   </section>
 
   <section>
@@ -114,7 +117,7 @@
       <div class="star-row"><div class="glyph">S</div><div><p class="k">Situation</p><p class="t">I was working through a long self-paced online course and hand-writing notes off the screen, which ate the study time and taught me very little. The built-in review didn't remember anything I'd previously got wrong.</p></div></div>
       <div class="star-row"><div class="glyph">T</div><div><p class="k">Task</p><p class="t">Replace transcription with something that reads the page, restates it in plainer and fewer words, answers questions about it live while I'm still looking at it, and then actively tests me on it later. All without becoming a tool that invents material or takes over my browser.</p></div></div>
       <div class="star-row"><div class="glyph">A</div><div><p class="k">Action</p><p class="t">Designed the loop and built the parts that needed to persist. Modeled the material as a structured JSON bank with a strict no-invented-content rule and a flag for exception-type questions. Wrote a dependency-free Node generator that emits a self-contained, accessible, theme-aware quiz from any set of question ids and fails loudly on unknown ones. Kept a markdown tracker of last-quizzed dates and named misconceptions to drive what gets tested next. Constrained the reading step to read-only, triggered on my own page turns, with model choice matched to how hard the page is.</p></div></div>
-      <div class="star-row"><div class="glyph">R</div><div><p class="k">Result</p><p class="t">58 banked questions across 29 topics, 28 of them flagged as the confusable ones, and a study loop I use daily in place of writing notes. Quizzes that used to take a custom prompt each time are now one command. The measurable difference is that topics I'd have skimmed past and quietly not understood now get chased down in the moment, because asking costs nothing.</p></div></div>
+      <div class="star-row"><div class="glyph">R</div><div><p class="k">Result</p><p class="t">58 banked questions across 29 topics, 28 of them flagged as the confusable ones, and a study loop I use daily in place of writing notes. Quizzes that used to take a custom prompt each time are now one command. Two things changed measurably: topics I'd have skimmed past and quietly not understood now get chased down in the moment, because asking costs nothing. And because the state sits in files rather than a chat window, the weak-spot list keeps growing into a map of the specific places I'm wrong, which is the part that gets more useful the longer I use it.</p></div></div>
     </div>
   </section>
 
@@ -134,6 +137,7 @@
         <li>The retrieval schedule is <b>a judgment call read off a table</b>, not a real spaced-repetition algorithm. No SM-2 here.</li>
         <li>The generated quiz has <b>no persistence</b>. Each file is one-shot and results go into the tracker by hand.</li>
         <li>It's built around <b>one learner</b>, me. Nothing about it is multi-user.</li>
+        <li>The memory is <b>files plus my own discipline</b>, not an enforced system. Nothing stops a careless session from banking a question that was never in the material, which by my own rule is the worst thing that could happen to it. Packaging the rules so they enforce themselves instead of living in my head is the obvious next thing to build.</li>
       </ul>
     </div>
     <p class="honest" style="margin-top:14px">Self-directed personal tooling, built with AI-assisted development.</p>
