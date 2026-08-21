@@ -148,6 +148,10 @@ h2{font-family:"Source Serif 4",Georgia,serif; font-weight:600; font-size:clamp(
 .term{font-family:"Spline Sans Mono",monospace; font-size:12.5px; background:var(--surface-2); border:1px solid var(--line); border-radius:11px; padding:14px 16px; color:var(--ink); overflow-x:auto; line-height:1.7}
 .term .g{color:var(--accent)} .term .m{color:var(--faint)}
 
+/* inline code in prose */
+code{font-family:"Spline Sans Mono",monospace; font-size:.88em; background:var(--surface-2); border:1px solid var(--line); border-radius:5px; padding:1px 5px; color:var(--ink); white-space:nowrap}
+.steps code, .prose code{word-break:break-word; white-space:normal}
+
 /* screenshots / figures (case-study media) */
 .shot{margin:16px 0 0; border:1px solid var(--line-strong); border-radius:14px; overflow:hidden; background:var(--surface-2); box-shadow:var(--shadow-lift)}
 .shot img{display:block; width:100%; height:auto}

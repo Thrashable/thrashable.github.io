@@ -1,0 +1,107 @@
+{
+  "_comment": "SAMPLE question bank for the public portfolio demo. Neutral web-fundamentals content, written for this demo only. The real bank this tool was built for is private study material and is not published. Schema is unchanged: every question carries the passage-grounded explanation it was written from, and 'trap' flags items that test an exception or a commonly-confused pair so review can weight them heavier.",
+  "course": "Sample bank — web fundamentals (demo data)",
+  "level": "Demo",
+  "questions": [
+    {
+      "id": "d1",
+      "chapter": 1,
+      "topic": "Status codes",
+      "trap": true,
+      "q": "A resource has moved permanently to a new URL and you want clients and search engines to update their records. Which status code is correct?",
+      "options": ["302 Found", "301 Moved Permanently", "307 Temporary Redirect", "410 Gone"],
+      "correct": 1,
+      "explain": "301 is the permanent redirect — caches and crawlers update the stored URL. 302 and 307 are temporary, so the original URL is kept. 410 means the resource is gone with no forwarding address."
+    },
+    {
+      "id": "d2",
+      "chapter": 1,
+      "topic": "Status codes",
+      "trap": true,
+      "q": "A request arrives with no credentials at all for a protected endpoint. Which is the correct response?",
+      "options": ["403 Forbidden", "400 Bad Request", "401 Unauthorized", "404 Not Found"],
+      "correct": 2,
+      "explain": "401 means \"you have not authenticated\" — the server is asking who you are. 403 means \"I know who you are and you still may not have this.\" The confusable pair is which one implies a known identity: 403 does, 401 does not."
+    },
+    {
+      "id": "d3",
+      "chapter": 2,
+      "topic": "HTTP methods",
+      "trap": true,
+      "q": "Which statement about idempotency is correct?",
+      "options": [
+        "POST is idempotent because the server can deduplicate it",
+        "PUT is idempotent — repeating the same request leaves the same end state",
+        "Idempotent and safe mean the same thing",
+        "Only GET can be idempotent"
+      ],
+      "correct": 1,
+      "explain": "Idempotent means repeating the request produces the same end state, not that it has no effect. PUT and DELETE qualify; POST does not. Safe is the stricter idea — no state change at all — which is why GET is both safe and idempotent while PUT is only idempotent."
+    },
+    {
+      "id": "d4",
+      "chapter": 2,
+      "topic": "Caching",
+      "trap": false,
+      "q": "What does `Cache-Control: no-store` instruct a client to do?",
+      "options": [
+        "Cache the response but revalidate before every use",
+        "Cache the response for zero seconds, then reuse it if the server is down",
+        "Never write the response to any cache at all",
+        "Cache only in the browser, never in a shared proxy"
+      ],
+      "correct": 2,
+      "explain": "no-store forbids writing the response anywhere. The one that caches-but-always-revalidates is no-cache — the names read backwards from what they do, which is why they get mixed up. private is the directive that restricts storage to the browser rather than a shared proxy."
+    },
+    {
+      "id": "d5",
+      "chapter": 3,
+      "topic": "Browser security",
+      "trap": true,
+      "q": "A browser sends an OPTIONS request before your actual PUT request. What is it doing?",
+      "options": [
+        "Checking whether the server is reachable",
+        "A CORS preflight, asking whether the cross-origin request is permitted",
+        "Negotiating which HTTP version to use",
+        "Requesting the list of methods for documentation"
+      ],
+      "correct": 1,
+      "explain": "That is a CORS preflight. Non-simple cross-origin requests — anything beyond a basic GET/POST with plain content types — trigger an OPTIONS probe first, and the browser only sends the real request if the response allows the method and headers."
+    },
+    {
+      "id": "d6",
+      "chapter": 3,
+      "topic": "Browser security",
+      "trap": false,
+      "q": "Which cookie attribute stops JavaScript on the page from reading a cookie?",
+      "options": ["Secure", "SameSite=Strict", "HttpOnly", "Path=/"],
+      "correct": 2,
+      "explain": "HttpOnly hides the cookie from document.cookie, which limits what an XSS payload can steal. Secure only requires HTTPS, and SameSite governs whether the cookie rides along on cross-site requests — a different attack (CSRF), not script access."
+    },
+    {
+      "id": "d7",
+      "chapter": 4,
+      "topic": "Accessibility",
+      "trap": true,
+      "q": "Body text must meet WCAG 2.1 AA. What is the minimum contrast ratio against its background?",
+      "options": ["3:1", "4.5:1", "7:1", "21:1"],
+      "correct": 1,
+      "explain": "AA requires 4.5:1 for normal body text. 3:1 is the relaxed bar for large text and UI components; 7:1 is the stricter AAA target. The trap is quoting the large-text number for body copy."
+    },
+    {
+      "id": "d8",
+      "chapter": 4,
+      "topic": "Accessibility",
+      "trap": false,
+      "q": "Why is `outline: none` on a focusable element a problem?",
+      "options": [
+        "It breaks the CSS box model",
+        "It removes the visible focus indicator keyboard users rely on to know where they are",
+        "It prevents the element from receiving focus at all",
+        "It is ignored by every modern browser"
+      ],
+      "correct": 1,
+      "explain": "The element still takes focus — the user just cannot see it, so anyone navigating by keyboard loses their place. If the default ring clashes with a design, replace it with a visible :focus-visible style rather than removing it."
+    }
+  ]
+}

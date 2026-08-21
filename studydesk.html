@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f6e56">
+<title>Study Desk — case study · Kellen Poole</title>
+<meta name="description" content="A personal study system built to get through a long self-paced online course: a readability layer that rewrites the course site's colors and enforces a WCAG contrast floor, a structured question bank, a zero-dependency quiz generator, and a spaced-retrieval tracker that records root causes instead of scores.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Spline+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar"><div class="row">
+  <a class="brand" href="/">Kellen <b>Poole</b></a>
+  <a class="back" href="/">← All projects</a>
+</div></div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow reveal">Personal tooling · accessibility · learning workflow</p>
+    <h1 class="reveal">Study Desk</h1>
+    <p class="lede reveal">Four small tools I built for myself to get through a <b>long self-paced online course</b>: a <b>readability layer</b> that rewrites the course site's colors and then enforces a contrast floor on every word, a <b>structured question bank</b>, a <b>zero-dependency quiz generator</b> that emits one self-contained HTML file, and a <b>tracker</b> that records why I got something wrong rather than what I scored.</p>
+    <div class="reveal"><span class="status"><span class="dot"></span> In daily use · interactive demo below · sample questions</span></div>
+    <p class="honest reveal" style="margin:12px 0 0">The course, the provider and the subject are deliberately left out, and none of my real study material is published here. The demo below is the real generator run against a <b>sample question bank written for this page</b>.</p>
+    <p class="started reveal"><b>Built</b> August 2026 · self-directed</p>
+    <div class="actions reveal">
+      <a class="btn btn-primary" href="/studydesk/" target="_blank" rel="noopener">Try the generated quiz <span class="arr">→</span></a>
+      <a class="btn btn-ghost" href="#build">See how it is built ↓</a>
+    </div>
+  </header>
+
+  <section>
+    <p class="label">The problem</p>
+    <p class="prose">Self-paced online courses are long, and the software around them is usually the weakest part of the experience. Two things kept getting in my way. The pages were black text on white with no dark mode, which is genuinely painful over multi-hour sessions. And the built-in review was thin: a few questions at the end of a chapter, no way to come back to something three weeks later, and no memory of what I had already got wrong.</p>
+    <p class="prose">So the interesting problem was not the material. It was that I was doing the two things a computer is better at than I am — remembering what had decayed, and deciding what to re-test — by hand, on paper, badly.</p>
+  </section>
+
+  <section id="build">
+    <p class="label">1 · A readability layer that will not let a word disappear</p>
+    <p class="prose">A Chrome extension (Manifest V3) that darkens the course pages. The obvious version of this is a stylesheet full of guessed selectors, and it always misses something on an app you cannot inspect ahead of time. So it does not ship one. It reads every element's <b>original computed colors</b> at document start and rewrites them by role: near-black text becomes off-white, gray body text gets lighter but never dimmer than it started, colored text and links keep their hue and get brightened, light backgrounds become dark surfaces with the gray tiers kept distinct, brand colors keep their hue and get darkened, and light borders become a visible mid-gray so tables keep their grid.</p>
+    <p class="prose">It also handles the things that usually break a dark mode: inline SVG icons, <code>::before</code> and <code>::after</code> bullets, checkmarks and badges, and black line art on transparent PNGs, which gets inverted so it does not vanish against a dark page. Photographs and opaque artwork are left exactly as they are.</p>
+    <p class="prose">Then the part that actually matters for coursework. A <b>contrast pass runs last and overrides the pretty answer</b>. It re-checks every piece of text against whatever background ended up behind it, computes the real WCAG contrast ratio, and walks the lightness until the ratio clears the target, falling back to plain black or white if it has to. The default target is <b>7:1</b>, the AAA threshold, not the 4.5:1 minimum. One deliberate technical choice inside it: brightness adjustments work in absolute chroma rather than HSL saturation, because HSL saturation blows up near white and near black and produces neon garbage exactly where text lives.</p>
+    <p class="prose">Because course pages load content late, the audit is not a one-shot. A <code>MutationObserver</code> with batched flushes catches new nodes, and the contrast safety net re-runs at <b>1.5s, 4s and 9s</b>, so text that appears after a quiz submit or a lazy-loaded section is covered too. There is a keyboard shortcut to force an audit, and it logs how many elements it had to correct.</p>
+  </section>
+
+  <section>
+    <p class="label">2 · A question bank with a sourcing rule</p>
+    <p class="prose">Questions live in one JSON file. Each carries an id, the chapter it came from, a topic, the question, its options, the correct index, and an <b>explanation written from the passage it came from</b>. Two design decisions do the real work here.</p>
+    <ol class="steps">
+      <li><b>Nothing is invented.</b> Every question has to be drawn from text the course actually served. It is a rule written at the top of the file, and it exists because a study tool built with an AI assistant is one careless prompt away from confidently testing you on a rule that does not exist. Wrong questions are worse than no questions.<span class="sub">The explanation field is the receipt: if it cannot be written from the source, the question does not go in.</span></li>
+      <li><b>A <code>trap</code> flag.</b> Items that test an exception, or one of a pair of things that are easy to confuse, get marked. Review weights them heavier, because those are the ones that decay first and cost the most.</li>
+    </ol>
+  </section>
+
+  <section>
+    <p class="label">3 · A generator that emits one file and needs nothing</p>
+    <p class="prose">A small Node script takes an output filename, a title, and a list of question ids, and writes a <b>single self-contained HTML file</b> — no build step, no framework, no network request, no dependencies. Open it anywhere and it works. It refuses to run if any requested id is missing and prints exactly which ones, so a typo fails loudly instead of quietly producing a shorter quiz.</p>
+    <p class="prose">The generated quiz shows one question at a time, reveals the explanation the moment you answer, keeps a running tally, and finishes on a review of <b>only the ones you missed</b> plus a retake button. It escapes everything it interpolates, adapts to light and dark, uses tabular numerals so the score does not jitter, and keeps visible focus rings for keyboard use.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="/studydesk/" target="_blank" rel="noopener">Try the generated quiz <span class="arr">→</span></a>
+    </div>
+    <p class="honest" style="margin-top:14px">That demo is the real generator, run unmodified against a sample bank of web-fundamentals questions written for this page. My actual study bank stays private.</p>
+  </section>
+
+  <section>
+    <p class="label">4 · A tracker that records causes, not scores</p>
+    <p class="prose">One markdown file holds course position, and a table of when each chapter was first learned and last quizzed. That table is the input to the decision the system exists to make: <b>what is due for retrieval</b>. A chapter quizzed today is not worth re-testing tomorrow, and one learned three weeks ago and never revisited is.</p>
+    <p class="prose">The section I did not expect to matter most is <b>known weak spots</b>. It does not log that I got a question wrong. It logs the <b>mental model that produced the wrong answer</b> — the specific false assumption, and a note to re-test it until it is automatic. Scores tell you nothing you can act on. A named misconception tells you exactly what the next quiz has to contain.</p>
+    <p class="prose">It also holds resolved contradictions. At one point two chapters of the source material genuinely disagreed with each other about an exception. A third passage settled it. Rather than fix it in my head and forget, the finding and the reasoning are written down, so the next quiz builds on the correct reading and I do not re-argue it with myself a month later.</p>
+  </section>
+
+  <section>
+    <p class="label">Why this is on a software portfolio</p>
+    <p class="prose">It is the smallest, most honest example of the thing I actually claim to do: notice a real friction, decide which part is worth automating, and build only that. Nobody asked for it and nothing here is impressive on its own. What it shows is the judgment calls — reading computed styles instead of guessing selectors, enforcing a contrast floor instead of trusting the palette, refusing to let a generator invent content, and storing causes instead of scores because causes are the part you can act on.</p>
+    <p class="prose">It is also the clearest case I have of building a tool for a user I fully understand, then actually living with it every day and fixing what broke.</p>
+  </section>
+
+  <section>
+    <p class="label">The story · STAR</p>
+    <div class="star">
+      <div class="star-row"><div class="glyph">S</div><div><p class="k">Situation</p><p class="t">I was working through a long self-paced online course whose site was hard to read for hours at a time and whose built-in review did not remember anything I had already got wrong.</p></div></div>
+      <div class="star-row"><div class="glyph">T</div><div><p class="k">Task</p><p class="t">Stop hand-managing the parts a computer does better — what has decayed and what to re-test — and make the material physically easier to read without hiding any of it.</p></div></div>
+      <div class="star-row"><div class="glyph">A</div><div><p class="k">Action</p><p class="t">Built a Manifest V3 extension that rewrites computed colors by role and then runs a WCAG contrast pass targeting 7:1, re-auditing on mutation and on a timed schedule so late-loading content is covered. Modeled the material as a structured question bank with a strict no-invented-content rule and a flag for exception-type items. Wrote a dependency-free generator that emits a self-contained, accessible, theme-aware quiz from any set of question ids. Kept a tracker of last-quizzed dates and named misconceptions to drive what gets tested next.</p></div></div>
+      <div class="star-row"><div class="glyph">R</div><div><p class="k">Result</p><p class="t">A study loop I use daily instead of hand-written notes, and a readability layer that has not yet let a single element go unreadable. Small tools, but built on real judgment about what to automate and what to leave alone.</p></div></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="label">Built with</p>
+    <div class="pills"><span class="pill">Chrome Manifest V3</span><span class="pill">Vanilla JS</span><span class="pill">Node</span><span class="pill">WCAG contrast math</span><span class="pill">MutationObserver</span><span class="pill">CSSOM / computed styles</span><span class="pill">JSON data modeling</span><span class="pill">zero-dependency HTML output</span></div>
+  </section>
+
+  <section>
+    <p class="label">Status &amp; honest limitations</p>
+    <div class="callout">
+      <p class="prose" style="margin:0"><b>Personal tooling, in daily use.</b> The generator demo above is live and runs the real code.</p>
+      <ul>
+        <li>The extension is <b>scoped to one course provider's domains</b> and loaded unpacked. It is not a general-purpose dark mode and is not on the Chrome Web Store.</li>
+        <li>The question bank is <b>hand-curated per chapter</b>, not automatically extracted. That is the point, but it does not scale without me.</li>
+        <li>The retrieval schedule is a <b>judgment call read off a table</b>, not a real spaced-repetition algorithm. There is no SM-2 here.</li>
+        <li>There is <b>no persistence</b> in the generated quiz. Each artifact is a one-shot file, and results are recorded by hand in the tracker.</li>
+        <li>My real question bank, course position and progress notes are <b>private and not published</b>.</li>
+      </ul>
+    </div>
+    <p class="honest" style="margin-top:14px">Self-directed personal tooling, built with AI-assisted development.</p>
+  </section>
+
+  <section>
+    <p class="label">Design note</p>
+    <p class="prose">The quiz artifact is styled like a paper exam sheet rather than an app: one question per screen, a serif for the question, monospace for anything numeric, and a single accent color. The explanation appears in place the moment you answer, because the gap between answering and finding out is where the learning actually happens, and every extra click widens it.</p>
+  </section>
+</div>
+
+<footer><div class="wrap">Study Desk · part of <a href="/">Kellen Poole's portfolio</a> · <a href="/studydesk/" target="_blank" rel="noopener">quiz demo</a></div></footer>
+</body>
+</html>

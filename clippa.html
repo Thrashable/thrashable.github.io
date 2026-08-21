@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f6e56">
+<title>Clippa — case study · Kellen Poole</title>
+<meta name="description" content="A Windows desktop stream clipper simple enough for a nine-year-old. Local whisper.cpp transcription plus a Claude ranking pass finds the good moments, and the whole feature degrades silently to offline audio analysis when there is no API key. 82 passing tests, six packaged releases.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Spline+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar"><div class="row">
+  <a class="brand" href="/">Kellen <b>Poole</b></a>
+  <a class="back" href="/">← All projects</a>
+</div></div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow reveal">Desktop app · local AI · shipped installer</p>
+    <h1 class="reveal">Clippa</h1>
+    <p class="lede reveal">A Windows app that turns a multi-hour stream recording into a short clip, built so a <b>nine-year-old</b> can finish one without help. Drop in a video, let it <b>find the good moments for you</b>, add your own words and sounds, and the MP4 lands in your Videos folder. The moment-finding runs <b>on your own machine</b> first, and gets smarter if a grown-up adds an API key.</p>
+    <div class="reveal"><span class="status"><span class="dot"></span> Verified · 82/82 tests pass · six packaged releases</span></div>
+    <p class="honest reveal" style="margin:12px 0 0">It is a desktop app, so there is no web demo to click. What follows is the build, the engineering decisions, and the test evidence.</p>
+    <p class="started reveal"><b>Built</b> July 2026 · self-directed</p>
+    <div class="actions reveal">
+      <a class="btn btn-primary" href="#build">See how it is built <span class="arr">↓</span></a>
+      <a class="btn btn-ghost" href="#verified">See it verified ↓</a>
+    </div>
+  </header>
+
+  <section>
+    <p class="label">The problem</p>
+    <p class="prose">Clipping software is built for adults who already know what a codec is. A nine-year-old in my house wanted to cut funny moments out of long stream recordings and kept getting stuck: timelines that need frame-accurate dragging, export dialogs asking for a bitrate, and cloud tools that want an account and an upload before they will do anything. The real problem was not the cutting. It was that <b>finding</b> the good moment in a four-hour recording is the boring part, and every tool made you scrub for it by hand.</p>
+    <p class="prose">There was a second constraint I cared about more. A kid's tool should not quietly ship a family's home videos to somebody's server, and it should not stop working the day a subscription lapses.</p>
+  </section>
+
+  <section id="build">
+    <p class="label">What it does</p>
+    <ol class="steps">
+      <li><b>Drop in a recording or an existing clip</b> — the app probes the file and picks a playback path per file: play it natively when it can, remux when that is enough, and fall back to a 720p proxy only when it has to.<span class="sub">Scrubbing a four-hour file has to feel instant or a kid gives up.</span></li>
+      <li><b>Find moments for me</b> — scans the audio for loudness spikes, scores them with a peak picker, and hands back candidate moments as cards you can tap.</li>
+      <li><b>Trim by feel</b> — a magnifier timeline over a fine strip, so you can be roughly right quickly instead of exactly right slowly.</li>
+      <li><b>Make it yours</b> — add your own text, import your own sounds, drop a watermark on and drag it where you want it.<span class="sub">No bundled sound library and no auto-captions, on purpose. The sounds are the kid's own.</span></li>
+      <li><b>Save the clip</b> — renders to MP4 in <b>Wide</b> or <b>Phone</b> (9:16, drag to aim the crop) and writes it straight to the Videos folder.</li>
+    </ol>
+  </section>
+
+  <section>
+    <p class="label">The AI part, and why it is optional</p>
+    <p class="prose">With no API key, moment-finding still works. It is a loudness scan with a z-score peak picker, entirely offline. Add a key in the grown-up settings and a second stage turns on: short audio slices around each candidate are transcribed <b>locally</b> with a bundled <b>whisper.cpp</b> build, and only those text snippets go to <b>Claude</b>, which ranks the candidates and writes a short kid-friendly title for each. The video itself never leaves the machine.</p>
+    <p class="prose">The part I am most pleased with is how little the model is trusted. It answers into a <b>schema</b>, and the timings it returns are then <b>clamped in code</b> to within ten seconds of the candidate the audio scan actually found, no matter what it said. If it refuses, times out, hits the token ceiling, or returns something unparseable, the call returns null and the app <b>falls back silently to the offline result</b>. The user never sees an error about a feature they did not ask for. That invariant is written down as a project rule: the no-key path must always work end to end, and must never regress.</p>
+    <p class="prose">The key itself is encrypted at rest with Electron's <code>safeStorage</code>, lives in exactly one module, and is never passed to the renderer.</p>
+  </section>
+
+  <section>
+    <p class="label">Engineering decisions worth naming</p>
+    <ol class="steps">
+      <li><b>The renderer never learns a file path.</b> Media is addressed by an opaque token over a custom <code>clippa://media/&lt;token&gt;</code> protocol. Every IPC message is runtime-validated with Zod in <b>both directions</b> against one shared schema file, and senders are checked too.</li>
+      <li><b>FFmpeg, ffprobe and whisper are always spawned with argv arrays, never through a shell.</b> That closes the obvious injection door in a tool whose whole job is accepting arbitrary user filenames.</li>
+      <li><b>Preview and export share one geometry module and one text renderer.</b> They are never forked, because the moment they diverge, what you saw stops being what you got.</li>
+      <li><b>Timestamps are normalized explicitly</b> after every trim rather than trusting a seek flag to zero the clock. That is the bug that silently produces clips with a black first second, and it only appears on certain sources.</li>
+      <li><b>Progress bars are never faked.</b> Phases that cannot be measured show indeterminate UI instead of an invented percentage.</li>
+    </ol>
+  </section>
+
+  <section id="verified">
+    <p class="label">How it is verified</p>
+    <p class="prose">The suite runs unit tests and real export checks against a fixture set chosen for the places video pipelines actually break: <b>HDR PQ</b>, <b>MKV/Opus</b>, <b>MPEG-2 transport streams</b>, variable frame rate, 90-degree rotated, odd dimensions, square and tall, non-zero and shifted start timestamps, a file with <b>no audio track</b>, and a filename mixing Japanese, Cyrillic and a <code>#</code>.</p>
+    <div class="term">
+<span class="m">$ npm test</span>
+
+<span class="m">&gt; clippa@0.1.5 test</span>
+<span class="m">&gt; vitest run</span>
+
+ <span class="g">Test Files  11 passed (11)</span>
+ <span class="g">     Tests  82 passed (82)</span>
+      Duration  10.57s
+    </div>
+    <p class="prose" style="margin-top:18px">On top of that there is an end-to-end self-test that drives the <b>real renderer</b> — open, probe, play, seek, thumbnails, decorate, export, cancel, find-moments — and exits non-zero on any failure. It runs against the <b>packaged executable</b>, not just the dev build, so "works on my machine" is not the standard. One of its assertions is a security check: it searches the IPC response for anything shaped like a Windows drive path and fails if a raw path ever leaked to the renderer.</p>
+    <p class="prose">The rule I held myself to: a milestone is only <b>done</b> when unit tests are green, the fixture exports verify, and the packaged smoke test passes.</p>
+  </section>
+
+  <section>
+    <p class="label">Directing the AI, not just prompting it</p>
+    <p class="prose">This was built quickly with AI-assisted development, which is exactly why it carries a short <code>AGENTS.md</code> of durable rules at the repo root. Every constraint above lives in it as one line: no shell spawns, both-direction IPC validation, no raw paths in the renderer, never fork preview and export, the fallback must never regress, never fabricate progress. The value is not documentation. It is that an agent working on the tenth milestone cannot quietly undo a decision made in the second one, and that a passing test suite is what gets to call something finished.</p>
+    <p class="prose">Twelve milestone commits, then six packaged releases from <b>0.1.0 to 0.1.5</b> as it got real use and the rough edges came back.</p>
+  </section>
+
+  <section>
+    <p class="label">The story · STAR</p>
+    <div class="star">
+      <div class="star-row"><div class="glyph">S</div><div><p class="k">Situation</p><p class="t">A nine-year-old wanted to make clips from long stream recordings. Every available tool assumed an adult editor, an account, and an upload, and none of them solved the actual chore, which is finding the good moment in a four-hour file.</p></div></div>
+      <div class="star-row"><div class="glyph">T</div><div><p class="k">Task</p><p class="t">Build a desktop app a child can finish a clip in without help, that works fully offline, keeps the video on the machine, and gets better rather than broken when an API key is present.</p></div></div>
+      <div class="star-row"><div class="glyph">A</div><div><p class="k">Action</p><p class="t">Built it in Electron with React and TypeScript over a hardened main process: Zod-validated IPC in both directions, opaque media tokens instead of file paths, and no shell spawns. Wrote a two-stage moment finder, an offline loudness and peak-picking pass followed by an optional local whisper.cpp transcription feeding a Claude ranking call whose output is schema-checked and clamped in code before it is trusted. Made the AI stage fail silently back to the offline result by design. Backed it with 82 tests over a codec-edge-case fixture set plus an end-to-end self-test that drives the packaged binary, then shipped NSIS and portable installers.</p></div></div>
+      <div class="star-row"><div class="glyph">R</div><div><p class="k">Result</p><p class="t">A working, installed Windows app its actual user can operate alone, across six releases. It is the clearest example I have of treating a model as an untrusted component inside a product that still has to work when the model is not there.</p></div></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="label">Built with</p>
+    <div class="pills"><span class="pill">Electron</span><span class="pill">React 19</span><span class="pill">TypeScript</span><span class="pill">electron-vite</span><span class="pill">Zod</span><span class="pill">FFmpeg / ffprobe</span><span class="pill">whisper.cpp</span><span class="pill">Anthropic Claude API</span><span class="pill">safeStorage</span><span class="pill">Vitest</span><span class="pill">electron-builder (NSIS)</span></div>
+  </section>
+
+  <section>
+    <p class="label">Status &amp; honest limitations</p>
+    <div class="callout">
+      <p class="prose" style="margin:0"><b>Working, installed, and in real use.</b> Tests and fixture exports pass, and the packaged installer and portable build are both verified.</p>
+      <ul>
+        <li><b>Windows only.</b> The build, the installer, and the bundled whisper binaries all target Windows.</li>
+        <li>The installer is <b>large</b>, around 346 MB, because FFmpeg and the transcription model ship inside it. That is the price of working offline.</li>
+        <li>The bundled transcription model is <b>English-only</b>. On other languages it can return nonsense, so the ranking prompt is written to fall back to loudness order when the transcript looks unusable.</li>
+        <li>It is <b>unsigned</b>, so Windows SmartScreen warns on first run.</li>
+        <li><b>Not published as a public repo yet.</b> Happy to walk through the source directly.</li>
+      </ul>
+    </div>
+    <p class="honest" style="margin-top:14px">Self-directed project, built with AI-assisted development.</p>
+  </section>
+
+  <section>
+    <p class="label">Design note</p>
+    <p class="prose">The interface is deliberately loud and round: big targets, plain-language labels, confetti when a clip saves. Anything that looks irreversible is phrased as a question a child can answer. The hardest design constraint was not visual. It was refusing features that would have made the app more impressive to an adult and less finishable by a kid. No auto-captions, no sound library, no bitrate field.</p>
+  </section>
+</div>
+
+<footer><div class="wrap">Clippa · part of <a href="/">Kellen Poole's portfolio</a></div></footer>
+</body>
+</html>
